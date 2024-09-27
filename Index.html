@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capture Server Response</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            margin: 50px auto;
+            max-width: 600px;
+            text-align: center;
+        }
+        #response {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            height: 200px;
+            overflow-y: auto;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Server Response Capture</h1>
+        <button onclick="getServerResponse()">Fetch Server Response</button>
+        <div id="response">Waiting for server response...</div>
+    </div>
+
+    <script>
+        function getServerResponse() {
+            // Replace 'your-server-url' with the actual URL to capture response from.
+            const url = 'https://your-server-url.com/get-data';
+
+            fetch(url)
+                .then(response => {
+                    const contentType = response.headers.get('content-type');
+
+                    // Check the content type to decide how to handle the response
+                    if (contentType.includes('application/json')) {
+                        // Handle JSON response
+                        return response.json().then(data => {
+                            displayResponse(JSON.stringify(data, null, 2), 'json');
+                        });
+                    } else if (contentType.includes('application/xml') || contentType.includes('text/xml')) {
+                        // Handle XML response
+                        return response.text().then(data => {
+                            const parser = new DOMParser();
+                            const xmlDoc = parser.parseFromString(data, "application/xml");
+                            displayResponse(new XMLSerializer().serializeToString(xmlDoc), 'xml');
+                        });
+                    } else {
+                        // Handle plain text or other formats
+                        return response.text().then(data => {
+                            displayResponse(data, 'text');
+                        });
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('response').innerText = 'Error fetching server response: ' + error;
+                });
+        }
+
+        function displayResponse(data, type) {
+            const responseDiv = document.getElementById('response');
+
+            if (type === 'json') {
+                // Pretty-print JSON response
+                responseDiv.innerText = data;
+            } else if (type === 'xml') {
+                // Display XML response
+                responseDiv.innerText = data;
+            } else {
+                // Display plain text response
+                responseDiv.innerText = data;
+            }
+        }
+    </script>
+</body>
+</html>
